@@ -19,13 +19,14 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.developer.myapplication.R;
+import com.developer.myapplication.object.DeviceItem;
 
 import java.util.ArrayList;
 
 public class ListDeviceFragment extends Fragment {
 
     private ListView mListDeviceRecyclerView;
-    private ArrayList<String> mDeviceList = new ArrayList<String>();
+    private ArrayList<DeviceItem> mDeviceList = new ArrayList<DeviceItem>();
     private BluetoothAdapter mBluetoothAdapter;
 
 
@@ -59,10 +60,9 @@ public class ListDeviceFragment extends Fragment {
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent
                         .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                mDeviceList.add(device.getName() + "\n" + device.getAddress());
-                Log.i("BT", device.getName() + "\n" + device.getAddress());
-                mListDeviceRecyclerView.setAdapter(new ArrayAdapter<String>(context,
-                        android.R.layout.simple_list_item_1, mDeviceList));
+                DeviceItem newDevice = new DeviceItem(device.getName(), device.getAddress(), false);
+                // Add it to our adapter
+                mDeviceList.add(newDevice);
             }
         }
     };
