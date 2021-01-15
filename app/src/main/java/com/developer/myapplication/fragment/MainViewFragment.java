@@ -12,17 +12,21 @@ import androidx.fragment.app.Fragment;
 
 import com.developer.myapplication.R;
 import com.developer.myapplication.activity.MainActivity;
+import com.developer.myapplication.listener.IMainViewListener;
 
 public class MainViewFragment extends Fragment {
 
-    private MainActivity mMainActivity;
     private ImageButton mImageButton;
+    private IMainViewListener mIMainViewListener;
+
+    public MainViewFragment(IMainViewListener iMainViewListener){
+        mIMainViewListener = iMainViewListener;
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main_view, container, false);
-        mMainActivity = (MainActivity) getActivity();
         initComponent(view);
         return view;
     }
@@ -32,25 +36,8 @@ public class MainViewFragment extends Fragment {
         mImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                connectToDivice();
+                mIMainViewListener.connectToDivice();
             }
         });
     }
-
-    private void connectToDivice() {
-        if(mMainActivity.isBluetoothEnable()){
-            findDivice();
-        }
-    }
-
-    /**
-     * Function to Find Divice by BlueTooth
-     */
-    private void findDivice() {
-        ListDeviceFragment listDeviceFragment = new ListDeviceFragment();
-        mMainActivity.getSupportFragmentManager().beginTransaction()
-                .replace(R.id.view_context, listDeviceFragment)
-                .commit();
-    }
-
 }
