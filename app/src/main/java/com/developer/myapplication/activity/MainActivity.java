@@ -1,15 +1,19 @@
 package com.developer.myapplication.activity;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import com.developer.myapplication.R;
@@ -24,6 +28,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements IMainViewListener {
 
     private static final int REQUEST_ENABLE_BT = 100;
+    private static final int REQUEST_GRANT_PERMISSON = 200;
 
     private Toolbar mToolbar;
     private ArrayList<DeviceItem> mDeviceList = new ArrayList<DeviceItem>();
@@ -42,11 +47,30 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
             }
         }
     };
+    private String[] mPermissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.RECORD_AUDIO};
+
+    private boolean isGrantLocation = false;
+    private boolean isGrantRecord = false;
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case REQUEST_GRANT_PERMISSON:
+                isGrantRecord = isGrantLocation = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                break;
+        }
+        if(!isGrantRecord || !isGrantLocation){
+            finish();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ActivityCompat.requestPermissions(this, mPermissions, REQUEST_GRANT_PERMISSON);
 
         initComponent();
         initMainView();

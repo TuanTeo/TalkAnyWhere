@@ -48,6 +48,12 @@ public class ListDeviceAdapter extends RecyclerView.Adapter<ListDeviceAdapter.Vi
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             mDeviceName = itemView.findViewById(R.id.text_view_device_name);
+            mDeviceName.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //TODO ket noi 2 thiet bi voi nhau
+                }
+            });
         }
 
         public TextView getDeviceName() {
