@@ -8,13 +8,18 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.ParcelUuid;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.developer.myapplication.R;
 import com.developer.myapplication.adapter.ListDeviceAdapter;
@@ -23,7 +28,11 @@ import com.developer.myapplication.fragment.MainViewFragment;
 import com.developer.myapplication.listener.IMainViewListener;
 import com.developer.myapplication.object.DeviceItem;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements IMainViewListener {
 
@@ -51,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
 
     private boolean isGrantLocation = false;
     private boolean isGrantRecord = false;
+    private OutputStream outputStream = null;
+    private InputStream inStream = null;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -118,23 +129,15 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
     }
 
     @Override
-    public void connectToDivice() {
+    public void startTalkService() {
+        //Check other android bluetooth device is paired
         if(isBluetoothEnable()){
-            findDivice();
-        }
-    }
+            try {
+                init();
+            } catch (IOException e){
 
-    /**
-     * Function to Find Divice by BlueTooth
-     */
-    private void findDivice() {
-        mListDeviceAdapter = new ListDeviceAdapter(this, mDeviceList);
-        ListDeviceFragment listDeviceFragment = new ListDeviceFragment(mListDeviceAdapter);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.view_context, listDeviceFragment)
-                .addToBackStack(null)
-                .commit();
-        mBluetoothAdapter.startDiscovery();
+            }
+        }
     }
 
     @Override
@@ -142,4 +145,44 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
         super.onDestroy();
         unregisterReceiver(mReceiver);
     }
+
+    private void init() throws IOException {
+        if (mBluetoothAdapter != null) {
+            if (mBluetoothAdapter.isEnabled()) {
+                Set<BluetoothDevice> bondedDevices = mBluetoothAdapter.getBondedDevices();
+
+                if(bondedDevices.size() > 0 && checkAndroidDevice(bondedDevices)) {
+                    Toast.makeText(this, "Android is Paired", Toast.LENGTH_SHORT).show();
+//                    Object[] devices = (Object []) bondedDevices.toArray();
+//                    BluetoothDevice device = (BluetoothDevice) devices[0];
+//                    ParcelUuid[] uuids = device.getUuids();
+//                    BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuids[0].getUuid());
+//                    socket.connect();
+//                    outputStream = socket.getOutputStream();
+//                    inStream = socket.getInputStream();
+                } else {
+                    Toast.makeText(this, "Khong co ket noi nao. Go to setting and connect!", Toast.LENGTH_SHORT).show();
+                    goToBluetoothSetting();
+                }
+            }
+        }
+    }
+
+    private void goToBluetoothSetting() {
+        Intent intentOpenBluetoothSettings = new Intent();
+        intentOpenBluetoothSettings.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
+        startActivity(intentOpenBluetoothSettings);
+    }
+
+    private boolean checkAndroidDevice(Set<BluetoothDevice> bondedDevices){
+        for(BluetoothDevice bluetoothDevice: bondedDevices){
+            int deviceClass = bluetoothDevice.getBluetoothClass().getDeviceClass();
+            if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDING && deviceClass == BluetoothClass.Device.PHONE_SMART){
+                //TODO: Co the giu lai bien BluetoothDevice o day
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

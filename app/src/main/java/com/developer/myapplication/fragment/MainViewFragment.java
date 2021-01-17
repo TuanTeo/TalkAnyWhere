@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.developer.myapplication.R;
-import com.developer.myapplication.activity.MainActivity;
 import com.developer.myapplication.listener.IMainViewListener;
 
 public class MainViewFragment extends Fragment {
@@ -36,7 +35,7 @@ public class MainViewFragment extends Fragment {
         mImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mIMainViewListener.connectToDivice();
+                mIMainViewListener.startTalkService();
             }
         });
     }
