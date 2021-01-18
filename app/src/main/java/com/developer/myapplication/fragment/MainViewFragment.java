@@ -35,7 +35,8 @@ public class MainViewFragment extends Fragment {
         mImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mIMainViewListener.startTalkService();
+                mIMainViewListener.connectToDivice();
+//                mIMainViewListener.startTalkService();
             }
         });
     }

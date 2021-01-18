@@ -49,10 +49,12 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent
                         .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                DeviceItem newDevice = new DeviceItem(device.getName(), device.getAddress(), false);
-                // Add it to our adapter
-                mDeviceList.add(newDevice);
-                mListDeviceAdapter.notifyDataSetChanged();
+                if(device.getBluetoothClass().getDeviceClass() == BluetoothClass.Device.PHONE_SMART) {
+                    DeviceItem newDevice = new DeviceItem(device.getName(), device.getAddress(), false);
+                    // Add it to our adapter
+                    mDeviceList.add(newDevice);
+                    mListDeviceAdapter.notifyDataSetChanged();
+                }
             }
         }
     };
@@ -141,6 +143,27 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
     }
 
     @Override
+    public void connectToDivice() {
+        if(isBluetoothEnable()){
+            findDivice();
+        }
+    }
+
+    /**
+     * Function to Find Divice by BlueTooth
+     */
+    private void findDivice() {
+        mDeviceList.clear();
+        mListDeviceAdapter = new ListDeviceAdapter(this, mDeviceList);
+        ListDeviceFragment listDeviceFragment = new ListDeviceFragment(mListDeviceAdapter);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.view_context, listDeviceFragment)
+                .addToBackStack(null)
+                .commit();
+        mBluetoothAdapter.startDiscovery();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mReceiver);
@@ -162,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
 //                    inStream = socket.getInputStream();
                 } else {
                     Toast.makeText(this, "Khong co ket noi nao. Go to setting and connect!", Toast.LENGTH_SHORT).show();
-                    goToBluetoothSetting();
+//                    goToBluetoothSetting();
                 }
             }
         }
