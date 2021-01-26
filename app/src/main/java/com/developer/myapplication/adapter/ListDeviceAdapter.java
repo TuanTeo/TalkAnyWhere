@@ -1,26 +1,32 @@
 package com.developer.myapplication.adapter;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.developer.myapplication.R;
+import com.developer.myapplication.listener.IDeviceItemListener;
 import com.developer.myapplication.object.DeviceItem;
 
 import java.util.ArrayList;
 
 public class ListDeviceAdapter extends RecyclerView.Adapter<ListDeviceAdapter.ViewHolder> {
     private Context mContext;
-    private ArrayList<DeviceItem> mListDevice;
+    private ArrayList<BluetoothDevice> mListDevice;
+    private IDeviceItemListener mIDeviceItemListener;
 
-    public ListDeviceAdapter(Context context, ArrayList<DeviceItem> listDevices){
+    public ListDeviceAdapter(Context context, ArrayList<BluetoothDevice> listDevices, IDeviceItemListener deviceItemListener){
         mContext = context;
         mListDevice = listDevices;
+        mIDeviceItemListener = deviceItemListener;
     }
 
     @NonNull
@@ -32,8 +38,8 @@ public class ListDeviceAdapter extends RecyclerView.Adapter<ListDeviceAdapter.Vi
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        String deviceName = mListDevice.get(position).getDeviceName();
-        String deviceAddress = mListDevice.get(position).getDeviceAddress();
+        String deviceName = mListDevice.get(position).getName();
+        String deviceAddress = mListDevice.get(position).getAddress();
         holder.getDeviceName().setText(deviceName + "\n" + deviceAddress);
     }
 
@@ -51,7 +57,7 @@ public class ListDeviceAdapter extends RecyclerView.Adapter<ListDeviceAdapter.Vi
             mDeviceName.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //TODO ket noi 2 thiet bi voi nhau
+                    mIDeviceItemListener.connectSocketBluetooth(mListDevice.get(getAdapterPosition()));
                 }
             });
         }

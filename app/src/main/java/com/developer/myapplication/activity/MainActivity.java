@@ -10,23 +10,26 @@ import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.ParcelUuid;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Message;
 import android.widget.Toast;
 
 import com.developer.myapplication.R;
 import com.developer.myapplication.adapter.ListDeviceAdapter;
 import com.developer.myapplication.fragment.ListDeviceFragment;
 import com.developer.myapplication.fragment.MainViewFragment;
+import com.developer.myapplication.listener.IDeviceItemListener;
 import com.developer.myapplication.listener.IMainViewListener;
 import com.developer.myapplication.object.DeviceItem;
+import com.developer.myapplication.service.ClientClass;
+import com.developer.myapplication.service.ServerClass;
+import com.developer.myapplication.util.Const;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,13 +37,13 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity implements IMainViewListener {
+public class MainActivity extends AppCompatActivity implements IMainViewListener, IDeviceItemListener {
 
     private static final int REQUEST_ENABLE_BT = 100;
     private static final int REQUEST_GRANT_PERMISSON = 200;
 
     private Toolbar mToolbar;
-    private ArrayList<DeviceItem> mDeviceList = new ArrayList<DeviceItem>();
+    private ArrayList<BluetoothDevice> mDeviceList = new ArrayList<BluetoothDevice>();
     private BluetoothAdapter mBluetoothAdapter;
     private ListDeviceAdapter mListDeviceAdapter;
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -50,9 +53,9 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
                 BluetoothDevice device = intent
                         .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if(device.getBluetoothClass().getDeviceClass() == BluetoothClass.Device.PHONE_SMART) {
-                    DeviceItem newDevice = new DeviceItem(device.getName(), device.getAddress(), false);
+//                    DeviceItem newDevice = new DeviceItem(device.getName(), device.getAddress(), false);
                     // Add it to our adapter
-                    mDeviceList.add(newDevice);
+                    mDeviceList.add(device);
                     mListDeviceAdapter.notifyDataSetChanged();
                 }
             }
@@ -64,6 +67,27 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
     private boolean isGrantRecord = false;
     private OutputStream outputStream = null;
     private InputStream inStream = null;
+
+    private Handler mHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(@NonNull Message msg) {
+            switch (msg.what){
+                case Const.STATE_LISTENING:
+                    break;
+                case Const.STATE_CONNECTING:
+                    break;
+                case Const.STATE_CONNECTED:
+                    Toast.makeText(MainActivity.this, "Connected", Toast.LENGTH_SHORT).show();
+                    break;
+                case Const.STATE_CONNECTION_FAILED:
+                    break;
+                case Const.STATE_MESSAGE_RECEIVED:
+                    break;
+
+            }
+            return true;
+        }
+    });
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -154,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
      */
     private void findDivice() {
         mDeviceList.clear();
-        mListDeviceAdapter = new ListDeviceAdapter(this, mDeviceList);
+        mListDeviceAdapter = new ListDeviceAdapter(this, mDeviceList, this);
         ListDeviceFragment listDeviceFragment = new ListDeviceFragment(mListDeviceAdapter);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.view_context, listDeviceFragment)
@@ -208,4 +232,12 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
         return false;
     }
 
+    @Override
+    public void connectSocketBluetooth(BluetoothDevice device) {
+        //TODO ket noi 2 thiet bi voi nhau
+        ServerClass serverClass = new ServerClass(mHandler);
+        serverClass.start();
+        ClientClass clientClass = new ClientClass(device, mHandler);
+        clientClass.start();
+    }
 }
