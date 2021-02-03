@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,7 +15,8 @@ import com.developer.myapplication.listener.IMainViewListener;
 
 public class MainViewFragment extends Fragment {
 
-    private ImageButton mImageButton;
+    private Button mListenButton;
+    private Button mCallButton;
     private IMainViewListener mIMainViewListener;
 
     public MainViewFragment(IMainViewListener iMainViewListener){
@@ -31,12 +32,19 @@ public class MainViewFragment extends Fragment {
     }
 
     private void initComponent(View view) {
-        mImageButton = view.findViewById(R.id.connect_button);
-        mImageButton.setOnClickListener(new View.OnClickListener() {
+        mCallButton = view.findViewById(R.id.call_button);
+        mCallButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mIMainViewListener.connectToDivice();
-//                mIMainViewListener.startTalkService();
+            }
+        });
+
+        mListenButton = view.findViewById(R.id.listen_button);
+        mListenButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mIMainViewListener.enableScanDevice();
             }
         });
     }

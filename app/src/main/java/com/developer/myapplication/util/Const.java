@@ -11,5 +11,5 @@ public class Const {
     public static final int STATE_CONNECTION_FAILED = 4;
     public static final int STATE_MESSAGE_RECEIVED = 5;
 
-    public static final UUID DEVICE_UUID = UUID.fromString("29095816-5bf3-11eb-ae93-0242ac130002");
+    public static final UUID DEVICE_UUID = UUID.fromString("cbbfe0e1-f7f3-4206-84e0-84cbb3d09dfc");
 }

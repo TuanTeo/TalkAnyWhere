@@ -14,13 +14,11 @@ import java.io.IOException;
 public class ClientClass extends Thread{
 
     private BluetoothSocket mSocket;
-    private BluetoothDevice mDevice;
     private BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private Handler mHandler;
 
     public ClientClass(BluetoothDevice device, Handler handler){
         mHandler = handler;
-        mDevice = device;
         try {
             LogUtils.showLog("Client constructor");
             mSocket = device.createInsecureRfcommSocketToServiceRecord(Const.DEVICE_UUID);

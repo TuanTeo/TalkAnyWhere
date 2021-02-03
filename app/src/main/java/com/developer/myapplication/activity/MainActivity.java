@@ -26,12 +26,10 @@ import com.developer.myapplication.fragment.ListDeviceFragment;
 import com.developer.myapplication.fragment.MainViewFragment;
 import com.developer.myapplication.listener.IDeviceItemListener;
 import com.developer.myapplication.listener.IMainViewListener;
-import com.developer.myapplication.object.DeviceItem;
 import com.developer.myapplication.service.ClientClass;
 import com.developer.myapplication.service.ServerClass;
 import com.developer.myapplication.util.Const;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -53,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
                 BluetoothDevice device = intent
                         .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if(device.getBluetoothClass().getDeviceClass() == BluetoothClass.Device.PHONE_SMART) {
-//                    DeviceItem newDevice = new DeviceItem(device.getName(), device.getAddress(), false);
                     // Add it to our adapter
                     mDeviceList.add(device);
                     mListDeviceAdapter.notifyDataSetChanged();
@@ -73,17 +70,19 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
         public boolean handleMessage(@NonNull Message msg) {
             switch (msg.what){
                 case Const.STATE_LISTENING:
+                    Toast.makeText(MainActivity.this, "Listening", Toast.LENGTH_SHORT).show();
                     break;
                 case Const.STATE_CONNECTING:
+                    Toast.makeText(MainActivity.this, "Connecting", Toast.LENGTH_SHORT).show();
                     break;
                 case Const.STATE_CONNECTED:
                     Toast.makeText(MainActivity.this, "Connected", Toast.LENGTH_SHORT).show();
                     break;
                 case Const.STATE_CONNECTION_FAILED:
+                    Toast.makeText(MainActivity.this, "Connection Failed", Toast.LENGTH_SHORT).show();
                     break;
                 case Const.STATE_MESSAGE_RECEIVED:
                     break;
-
             }
             return true;
         }
@@ -137,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
      * Function to check is Bluetooth enabled?
      * @return
      */
-    public boolean isBluetoothEnable(){
+    private boolean isBluetoothEnable(){
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
             // Device does not support Bluetooth
@@ -155,22 +154,22 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
     }
 
     @Override
-    public void startTalkService() {
-        //Check other android bluetooth device is paired
-        if(isBluetoothEnable()){
-            try {
-                init();
-            } catch (IOException e){
-
-            }
-        }
-    }
-
-    @Override
     public void connectToDivice() {
         if(isBluetoothEnable()){
             findDivice();
         }
+    }
+
+    @Override
+    public void enableScanDevice() {
+        /*Start ServerSocket when enable scan mode*/
+        ServerClass serverClass = new ServerClass(mHandler);
+        serverClass.start();
+
+        /*Enable Scan mode*/
+        Intent discoverableItent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        discoverableItent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 30);
+        startActivity(discoverableItent);
     }
 
     /**
@@ -193,50 +192,9 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
         unregisterReceiver(mReceiver);
     }
 
-    private void init() throws IOException {
-        if (mBluetoothAdapter != null) {
-            if (mBluetoothAdapter.isEnabled()) {
-                Set<BluetoothDevice> bondedDevices = mBluetoothAdapter.getBondedDevices();
-
-                if(bondedDevices.size() > 0 && checkAndroidDevice(bondedDevices)) {
-                    Toast.makeText(this, "Android is Paired", Toast.LENGTH_SHORT).show();
-//                    Object[] devices = (Object []) bondedDevices.toArray();
-//                    BluetoothDevice device = (BluetoothDevice) devices[0];
-//                    ParcelUuid[] uuids = device.getUuids();
-//                    BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuids[0].getUuid());
-//                    socket.connect();
-//                    outputStream = socket.getOutputStream();
-//                    inStream = socket.getInputStream();
-                } else {
-                    Toast.makeText(this, "Khong co ket noi nao. Go to setting and connect!", Toast.LENGTH_SHORT).show();
-//                    goToBluetoothSetting();
-                }
-            }
-        }
-    }
-
-    private void goToBluetoothSetting() {
-        Intent intentOpenBluetoothSettings = new Intent();
-        intentOpenBluetoothSettings.setAction(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
-        startActivity(intentOpenBluetoothSettings);
-    }
-
-    private boolean checkAndroidDevice(Set<BluetoothDevice> bondedDevices){
-        for(BluetoothDevice bluetoothDevice: bondedDevices){
-            int deviceClass = bluetoothDevice.getBluetoothClass().getDeviceClass();
-            if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDING && deviceClass == BluetoothClass.Device.PHONE_SMART){
-                //TODO: Co the giu lai bien BluetoothDevice o day
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public void connectSocketBluetooth(BluetoothDevice device) {
-        //TODO ket noi 2 thiet bi voi nhau
-        ServerClass serverClass = new ServerClass(mHandler);
-        serverClass.start();
+        /*Connect to Socket server*/
         ClientClass clientClass = new ClientClass(device, mHandler);
         clientClass.start();
     }
