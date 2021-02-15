@@ -6,6 +6,8 @@ import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.os.Message;
 
+import com.developer.myapplication.listener.IStartServiceListener;
+import com.developer.myapplication.object.AudioCall;
 import com.developer.myapplication.util.Const;
 import com.developer.myapplication.util.LogUtils;
 
@@ -16,8 +18,11 @@ public class ClientClass extends Thread{
     private BluetoothSocket mSocket;
     private BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private Handler mHandler;
+    private IStartServiceListener mIStartService;
+    private SendReceiveService mSendReceiveService;
 
-    public ClientClass(BluetoothDevice device, Handler handler){
+    public ClientClass(BluetoothDevice device, Handler handler, IStartServiceListener startServiceListener){
+        mIStartService = startServiceListener;
         mHandler = handler;
         try {
             LogUtils.showLog("Client constructor");
@@ -37,6 +42,12 @@ public class ClientClass extends Thread{
             message.what = Const.STATE_CONNECTED;
             LogUtils.showLog("Client run accept");
             mHandler.sendMessage(message);
+
+            mIStartService.startSendReceiveService(mSocket);
+            mSendReceiveService = new SendReceiveService(mSocket, mHandler);
+            mSendReceiveService.start();
+            AudioCall call = new AudioCall(mSendReceiveService);
+            call.startMic();
         }catch (IOException e){
             e.printStackTrace();
             Message message = Message.obtain();
